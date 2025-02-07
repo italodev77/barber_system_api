@@ -1,8 +1,11 @@
 package dev.mivas.BarberSystem.User;
 
+import dev.mivas.BarberSystem.Haircut.HaircutModel;
 import dev.mivas.BarberSystem.Subscription.SubscriptionModel;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -31,4 +34,7 @@ public class UserModel {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private SubscriptionModel subscription;
+
+    @OneToMany(mappedBy = "user")
+    private List<HaircutModel> haircuts;
 }
