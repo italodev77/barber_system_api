@@ -16,6 +16,14 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+  springdoc:
+    api-docs:
+      enable: true
+      path: /api/api-docs
+    swagger-ui:
+      enable: true
+      path: /swagger-ui.html
+
 
 barbersystem:
   security:

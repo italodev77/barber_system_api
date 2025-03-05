@@ -8,10 +8,13 @@ import dev.mivas.BarberSystem.User.request.UsersRequest;
 import dev.mivas.BarberSystem.User.response.LoginResponse;
 import dev.mivas.BarberSystem.User.response.UsersResponse;
 import dev.mivas.BarberSystem.User.services.UsersService;
+import dev.mivas.BarberSystem.exception.UsernameOrPasswordInvalidException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,21 +32,29 @@ public class AuthController {
     private final TokenService tokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<UsersResponse> Register(@RequestBody UsersRequest request){
+    public ResponseEntity<UsersResponse> Register(@Valid @RequestBody UsersRequest request){
         UsersModel savedUser = usersService.save(UsersMapper.toUsers(request));
         return ResponseEntity.status(HttpStatus.CREATED).body((UsersMapper.toUsersResponse(savedUser)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
-        UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.email(), request.password());
-        Authentication authenticate = authenticationManager.authenticate(userAndPass);
 
-        UsersModel user = (UsersModel) authenticate.getPrincipal();
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
 
-        String token = tokenService.generateToken(user);
+        try{
+            UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(request.email(), request.password());
+            Authentication authenticate = authenticationManager.authenticate(userAndPass);
 
-        return ResponseEntity.ok(new LoginResponse(token));
+            UsersModel user = (UsersModel) authenticate.getPrincipal();
+
+            String token = tokenService.generateToken(user);
+
+            return ResponseEntity.ok(new LoginResponse(token));
+
+        } catch (BadCredentialsException e){
+            throw new  UsernameOrPasswordInvalidException("Usuário ou senha inválidos");
+        }
+
 
     }
 }
